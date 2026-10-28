@@ -1,0 +1,96 @@
+{
+ "format_version": "1.2",
+ "resource_drift": [
+  {
+   "address": "google_compute_instance.trainer",
+   "mode": "managed",
+   "type": "google_compute_instance",
+   "name": "trainer",
+   "change": {
+    "actions": [
+     "update"
+    ],
+    "before": {
+     "name": "trainer",
+     "machine_type": "n2-standard-8",
+     "etag": "CAE=",
+     "update_time": "2026-10-20T10:00:00Z",
+     "generation": "1"
+    },
+    "after": {
+     "name": "trainer",
+     "machine_type": "n2-standard-64",
+     "etag": "CAI=",
+     "update_time": "2026-10-27T03:12:00Z",
+     "generation": "2"
+    }
+   }
+  },
+  {
+   "address": "google_cloud_run_v2_service.burst",
+   "mode": "managed",
+   "type": "google_cloud_run_v2_service",
+   "name": "burst",
+   "change": {
+    "actions": [
+     "update"
+    ],
+    "before": {
+     "name": "burst",
+     "template": [
+      {
+       "scaling": [
+        {
+         "min_instance_count": 0,
+         "max_instance_count": 10
+        }
+       ]
+      }
+     ]
+    },
+    "after": {
+     "name": "burst",
+     "template": [
+      {
+       "scaling": [
+        {
+         "min_instance_count": 5,
+         "max_instance_count": 500
+        }
+       ]
+      }
+     ]
+    }
+   }
+  },
+  {
+   "address": "google_compute_disk.scratch",
+   "mode": "managed",
+   "type": "google_compute_disk",
+   "name": "scratch",
+   "change": {
+    "actions": [
+     "update"
+    ],
+    "before": {
+     "name": "scratch",
+     "size": 100
+    },
+    "after": {
+     "name": "scratch",
+     "size": 4000
+    }
+   }
+  }
+ ],
+ "x_audit": {
+  "google_compute_instance.trainer": [
+   {
+    "time": "2026-10-24T16:00:00Z",
+    "principal": "ml-lead@acme.com",
+    "method": "v1.compute.instances.setMachineType",
+    "caller_ip": "203.0.113.7"
+   }
+  ]
+ }
+}

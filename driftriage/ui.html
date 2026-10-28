@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Drift Triage</title>
+<style>
+:root{--bg:#f6f7f9;--panel:#fff;--ink:#14181f;--mute:#5d6674;--line:#e2e5ea;--accent:#2a5bd7;--crit:#b3261e;--high:#c2410c;--med:#a16207;--low:#0e7490;--ok:#157f4b;--chip:#eef1f5;--add:#157f4b;--del:#b3261e}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1218;--panel:#171b23;--ink:#e8ebf0;--mute:#98a1b0;--line:#2a303b;--accent:#7aa2ff;--crit:#ff8a80;--high:#fb923c;--med:#facc15;--low:#22d3ee;--ok:#5fd39a;--chip:#232936;--add:#5fd39a;--del:#ff8a80}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:14px 24px;background:var(--panel);border-bottom:1px solid var(--line)}
+header h1{font-size:17px;margin:0;font-weight:650}.badges{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.badge{font-size:12px;padding:2px 9px;border:1px solid var(--line);border-radius:999px;color:var(--mute);background:var(--bg)}
+main{display:grid;grid-template-columns:320px 1fr;gap:20px;padding:20px 24px;max-width:1280px;margin:auto}@media(max-width:960px){main{grid-template-columns:1fr;padding:16px}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px}
+.card h2{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin:0 0 10px;font-weight:600}
+label{display:block;font-size:12px;color:var(--mute);margin:8px 0 3px}select,textarea,button{font:inherit;color:var(--ink)}
+select,textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:7px}textarea{height:110px;font:12px/1.4 ui-monospace,Menlo,monospace}
+button{background:var(--accent);color:#fff;border:0;border-radius:6px;padding:8px 14px;font-weight:600;cursor:pointer;margin-top:10px;width:100%}button:disabled{opacity:.5;cursor:wait}
+.hist{list-style:none;margin:0;padding:0}.hist li{display:flex;gap:8px;align-items:center;padding:7px 6px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:6px}.hist li:hover,.hist li.sel{background:var(--bg)}.hist .t{margin-left:auto;color:var(--mute);font-size:12px}
+.pill{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;text-transform:uppercase;white-space:nowrap}
+.p-alert,.d-investigate{background:color-mix(in srgb,var(--crit) 16%,transparent);color:var(--crit)}.p-attention,.d-revert{background:color-mix(in srgb,var(--med) 18%,transparent);color:var(--med)}
+.p-clean,.d-adopt{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}.d-ignore{background:var(--chip);color:var(--mute)}
+.banner{display:flex;gap:20px;align-items:center;flex-wrap:wrap;padding:16px 18px;border-radius:10px;margin-bottom:16px;border:1px solid var(--line);background:var(--panel)}
+.banner .big{font-size:22px;font-weight:750}.b-alert .big{color:var(--crit)}.b-attention .big{color:var(--med)}.b-clean .big{color:var(--ok)}
+.tiles{display:flex;gap:10px;margin-left:auto}.tile{text-align:center;padding:6px 14px;border-radius:8px;background:var(--bg);border:1px solid var(--line)}.tile b{display:block;font-size:20px}.tile span{font-size:11px;color:var(--mute);text-transform:uppercase}
+.drift{border:1px solid var(--line);border-left:5px solid var(--low);border-radius:8px;padding:12px 14px;margin:12px 0;background:var(--panel)}
+.drift.critical{border-left-color:var(--crit)}.drift.high{border-left-color:var(--high)}.drift.medium{border-left-color:var(--med)}.drift.info{border-left-color:var(--line)}
+.h{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.addr{font:13px ui-monospace,Menlo,monospace;font-weight:600;word-break:break-all}
+.sev{font-size:11px;font-weight:700;text-transform:uppercase}.sev.critical{color:var(--crit)}.sev.high{color:var(--high)}.sev.medium{color:var(--med)}.sev.low{color:var(--low)}
+.chip{font-size:11px;padding:1px 7px;border-radius:4px;background:var(--chip);color:var(--mute)}.chip.human{background:color-mix(in srgb,var(--high) 16%,transparent);color:var(--high);font-weight:600}
+.why{margin:4px 0;color:var(--mute);font-size:13px}table{border-collapse:collapse;font:12px ui-monospace,Menlo,monospace;margin:6px 0;max-width:100%}td{padding:2px 10px 2px 0;vertical-align:top;word-break:break-all}.del{color:var(--del)}.add{color:var(--add)}
+.ev{font-size:12px;color:var(--mute);margin:4px 0}.ev b{color:var(--ink)}.note{margin-top:6px;font-size:13px}
+.cmd{font:11px ui-monospace,Menlo,monospace;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:5px 8px;margin:4px 0;word-break:break-all}
+.warn{background:color-mix(in srgb,var(--med) 16%,transparent);color:var(--med);padding:8px 12px;border-radius:8px;margin-bottom:10px;font-size:13px}.m{color:var(--mute);font-size:13px}.err{color:var(--crit);margin-top:8px;font-size:13px}.empty{color:var(--mute);padding:40px;text-align:center}
+.tr{display:flex;gap:8px;font-size:12px;align-items:center;margin:2px 0}.tr .l{width:200px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tr .t{flex:1;height:9px;background:var(--bg);border-radius:5px;position:relative}.tr .f{position:absolute;height:100%;background:var(--accent);border-radius:5px;min-width:3px}.tr .f.e{background:var(--crit)}
+pre{white-space:pre-wrap;font:12px/1.5 ui-monospace,Menlo,monospace;margin:0}
+</style>
+</head>
+<body>
+<header><h1>Drift Triage</h1><span class="badge">adopt · revert · investigate, with who changed it</span><div class="badges" id="badges"></div></header>
+<main>
+<aside>
+ <div class="card"><h2>Triage</h2>
+  <label for="sample">Sample refresh-only plan</label><select id="sample"></select>
+  <label for="plan">Plan JSON (<code>terraform show -json</code>)</label><textarea id="plan" spellcheck="false"></textarea>
+  <label for="audit">Who-changed-it source</label><select id="audit"></select>
+  <label for="llm">Model</label><select id="llm"></select>
+  <button id="run">Triage drift</button><div class="err" id="err"></div></div>
+ <div class="card"><h2>Recent reports</h2><ul class="hist" id="hist"></ul></div>
+</aside>
+<section id="out"><div class="card empty">Choose a sample and run a triage.</div></section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const PL={alert:"Alert",attention:"Attention",clean:"Clean"};let cfg={},cur=null;
+async function api(p,o){const r=await fetch(p,o);const b=await r.json().catch(()=>({}));if(!r.ok)throw new Error(b.detail||r.statusText);return b}
+async function badges(){cfg=await api("/api/config");$("badges").innerHTML=`<span class="badge">model: ${esc(cfg.provider)}${cfg.model?" / "+esc(cfg.model):""}</span><span class="badge">spend $${cfg.spend_today_usd.toFixed(4)} / $${cfg.daily_budget_usd.toFixed(2)}</span>${cfg.audit_project?`<span class="badge">audit logs: ${esc(cfg.audit_project)}</span>`:""}`}
+async function init(){await badges();
+ $("llm").innerHTML=cfg.allowed_providers.map(p=>`<option ${p===cfg.provider?"selected":""}>${esc(p)}</option>`).join("");
+ $("audit").innerHTML=[["fixture","from the file (x_audit)"],...(cfg.audit_project?[["cloud","Cloud Audit Logs (live)"]]:[]),["none","none"]].map(([v,t])=>`<option value="${v}">${t}</option>`).join("");
+ const n=await api("/api/samples");$("sample").innerHTML=`<option value="">-- choose --</option>`+n.map(x=>`<option>${esc(x)}</option>`).join("");
+ $("sample").onchange=async()=>{if($("sample").value)$("plan").value=JSON.stringify(await api("/api/samples/"+$("sample").value),null,1)};
+ $("run").onclick=run;await hist();const h=location.hash.slice(1);if(h)show(await api("/api/reports/"+h))}
+async function hist(){const rows=await api("/api/reports?limit=15");$("hist").innerHTML=rows.map(r=>`<li data-id="${esc(r.id)}" class="${cur===r.id?"sel":""}"><span class="pill p-${r.posture}">${PL[r.posture]}</span><span>${r.drifts.length} drifts</span><span class="t">${esc(r.created_at.slice(11,19))}</span></li>`).join("")||`<li style="cursor:default;color:var(--mute)">none yet</li>`;
+ document.querySelectorAll("#hist li[data-id]").forEach(li=>li.onclick=async()=>show(await api("/api/reports/"+li.dataset.id)))}
+async function run(){$("err").textContent="";let plan;try{plan=JSON.parse($("plan").value)}catch(e){$("err").textContent="Plan is not valid JSON.";return}
+ $("run").disabled=true;$("run").textContent="Triaging…";
+ try{const r=await api("/api/reports",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({plan,llm:$("llm").value,audit:$("audit").value})});show(r);await hist();await badges()}
+ catch(e){$("err").textContent=e.message}finally{$("run").disabled=false;$("run").textContent="Triage drift"}}
+const fmt=v=>v===null||v===undefined?"∅":typeof v==="string"?v:JSON.stringify(v);
+function show(r){cur=r.id;location.hash=r.id;const tot=Math.max(r.duration_ms,1);
+ const card=d=>`<div class="drift ${d.severity}"><div class="h"><span class="pill d-${d.decision}">${d.decision}</span><span class="sev ${d.severity}">${d.severity}</span><span class="chip">${esc(d.category)}</span>${d.evidence.actor!=="unknown"?`<span class="chip ${d.evidence.actor==="human"?"human":""}">changed by ${esc(d.evidence.actor)}</span>`:""}</div>
+  <div class="addr">${esc(d.address)}</div><div class="why">${esc(d.why)}</div>
+  <table>${d.changes.slice(0,6).map(c=>`<tr><td>${esc(c.path)}</td><td class="del">${esc(fmt(c.before))}</td><td>→</td><td class="add">${esc(fmt(c.after))}</td></tr>`).join("")}</table>
+  ${d.noise.length?`<div class="m">${d.noise.length} computed attribute(s) filtered as noise</div>`:""}
+  ${d.evidence.events.map(e=>`<div class="ev">audit: <b>${esc(e.principal)}</b> · ${esc(e.method)} · ${esc(e.time)}${e.caller_ip?` · ${esc(e.caller_ip)}`:""}</div>`).join("")||(d.decision!=="ignore"?`<div class="ev">${esc(d.evidence.note||"no audit evidence")}</div>`:"")}
+  ${d.note?`<div class="note"><b>${esc(r.provider)} note:</b> ${esc(d.note)}</div>`:""}
+  ${d.hcl.map(h=>`<div class="cmd">${esc(h)}</div>`).join("")}${d.commands.map(c=>`<div class="cmd">$ ${esc(c)}</div>`).join("")}</div>`;
+ const tr=r.trace.filter(s=>s.status!=="skipped").map(s=>`<div class="tr"><span class="l">${esc(s.agent)} · ${esc(s.action)}</span><span class="t"><span class="f ${s.status==="error"?"e":""}" style="left:${(s.start_ms/tot*100).toFixed(1)}%;width:${Math.max(s.duration_ms/tot*100,.5).toFixed(1)}%"></span></span><span class="m">${s.duration_ms} ms</span></div>`).join("");
+ $("out").innerHTML=`<div class="banner b-${r.posture}"><div><div class="big">${PL[r.posture].toUpperCase()}</div><div class="m">${r.drifts.length} drifted resources · ${esc(r.provider)} / ${esc(r.model)} · $${r.cost_usd.toFixed(5)} · ${r.duration_ms} ms</div></div>
+  <div class="tiles">${["investigate","revert","adopt","ignore"].map(k=>`<div class="tile"><b>${r.counts[k]||0}</b><span>${k}</span></div>`).join("")}</div></div>
+ <div class="card"><h2>Summary</h2>${esc(r.summary)}</div>${r.degraded.map(d=>`<div class="warn">⚠ ${esc(d)}</div>`).join("")}
+ <div class="card"><h2>Drifted resources</h2>${r.drifts.map(card).join("")}</div>
+ ${r.pr_text?`<div class="card"><h2>Suggested PR for the adopt set</h2><pre>${esc(r.pr_text)}</pre></div>`:""}
+ ${r.dropped.length?`<div class="card"><h2>Rejected model output</h2>${r.dropped.map(d=>`<div class="m">✗ ${esc(d.item)} — ${esc(d.reason)}</div>`).join("")}</div>`:""}
+ <div class="card"><h2>Orchestration</h2>${tr}</div>`;
+ document.querySelectorAll("#hist li").forEach(li=>li.classList.toggle("sel",li.dataset.id===r.id))}
+init().catch(e=>{$("err").textContent=e.message});
+</script>
+</body>
+</html>

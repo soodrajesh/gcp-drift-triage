@@ -1,0 +1,110 @@
+{
+ "format_version": "1.2",
+ "resource_drift": [
+  {
+   "address": "google_container_node_pool.workers",
+   "mode": "managed",
+   "type": "google_container_node_pool",
+   "name": "workers",
+   "change": {
+    "actions": [
+     "update"
+    ],
+    "before": {
+     "name": "workers",
+     "node_count": 3,
+     "etag": "CAE=",
+     "update_time": "2026-10-20T10:00:00Z",
+     "generation": "1"
+    },
+    "after": {
+     "name": "workers",
+     "node_count": 4,
+     "etag": "CAI=",
+     "update_time": "2026-10-27T03:12:00Z",
+     "generation": "2"
+    }
+   }
+  },
+  {
+   "address": "google_storage_bucket.logs",
+   "mode": "managed",
+   "type": "google_storage_bucket",
+   "name": "logs",
+   "change": {
+    "actions": [
+     "update"
+    ],
+    "before": {
+     "name": "acme-logs",
+     "etag": "CAE=",
+     "update_time": "2026-10-20T10:00:00Z",
+     "generation": "1"
+    },
+    "after": {
+     "name": "acme-logs",
+     "etag": "CAI=",
+     "update_time": "2026-10-27T03:12:00Z",
+     "generation": "2"
+    }
+   }
+  },
+  {
+   "address": "google_cloud_run_v2_service.web",
+   "mode": "managed",
+   "type": "google_cloud_run_v2_service",
+   "name": "web",
+   "change": {
+    "actions": [
+     "update"
+    ],
+    "before": {
+     "name": "web",
+     "template": [
+      {
+       "revision": "web-001"
+      }
+     ],
+     "labels": {
+      "goog-managed": "x"
+     }
+    },
+    "after": {
+     "name": "web",
+     "template": [
+      {
+       "revision": "web-002"
+      }
+     ],
+     "labels": {
+      "goog-managed": "y"
+     }
+    }
+   }
+  },
+  {
+   "address": "google_storage_bucket.docs",
+   "mode": "managed",
+   "type": "google_storage_bucket",
+   "name": "docs",
+   "change": {
+    "actions": [
+     "update"
+    ],
+    "before": {
+     "name": "acme-docs",
+     "labels": {
+      "env": "prod"
+     }
+    },
+    "after": {
+     "name": "acme-docs",
+     "labels": {
+      "env": "prod",
+      "reviewed": "2026-q4"
+     }
+    }
+   }
+  }
+ ]
+}
