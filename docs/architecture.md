@@ -1,5 +1,7 @@
 # Architecture
 
+[![Architecture diagram](img/architecture.png)](img/architecture.svg)
+
 **Input** is the JSON of a refresh-only plan: `resource_drift[]` with `change.before` (state) and `change.after` (live).
 
 **Parse** (`parse.py`): flattens both sides. Lists of scalars are compared as sets (`members.+` / `members.-`), because GCP
